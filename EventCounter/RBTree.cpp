@@ -33,7 +33,7 @@ void RBTree::deleteAll()
 
 RBTree::~RBTree()
 {
-//    deleteAll();
+    deleteAll();
 }
 
 
@@ -43,18 +43,15 @@ RBTNode* ArrayToBST(vector<RBTNode> & node, long start, long end,int height,long
     height++;
     
     if (start > end) return NULL;
-    //Get the middle element and make it root
+    //get the middle element and make it root
     long mid = (start + end)/2;
     
     RBTNode *root = &node[mid];
     
-    //Recursively construct the left subtree and make it left child of root
     root->left = ArrayToBST(node, start, mid-1,height,size);
-    if (root->left!= nullptr) root->left->parent = root;
-    
-    //Recursively construct the right subtree and make it right child of root
+    if (root->left!= NULL) root->left->parent = root;
     root->right = ArrayToBST(node, mid+1, end,height,size);
-    if (root->right!= nullptr) root->right->parent = root;
+    if (root->right!= NULL) root->right->parent = root;
    
     long h=log2(size);
     if(height>h) node[mid].color=RED;//set leaves in the last degree red
@@ -110,7 +107,20 @@ void RBTree::count(long id){
 
 void RBTree::next(long id){
     RBTNode *node = new RBTNode(0,0);
-    if ((node = search(id)) != NULL){
+    RBTNode *tmp = new RBTNode(0,0);
+    RBTNode *Sroot = root;
+    while ((Sroot!=NULL) && (Sroot->N_key!=id))//tree isn't empty and root!=target
+    {
+        tmp=Sroot;
+        if (id < Sroot->N_key)  Sroot = Sroot->left;
+        else                     Sroot = Sroot->right;
+    }
+    if (Sroot!=NULL) node=Sroot;
+    else {//id isn't a key of node in the tree
+        node=tmp;
+        if(id<node->N_key) {cout<<node->N_key<<" "<<node->N_count<<endl; }
+    }
+    if (node->N_key==id||id>node->N_key){
         RBTNode *newroot =node->right;//case has right child
         if (newroot != NULL){//next is the leftmost node in right subtree
             while(newroot->left != NULL) newroot = newroot->left;
@@ -135,7 +145,20 @@ void RBTree::next(long id){
 
 void RBTree::previous(long id){
     RBTNode *node = new RBTNode(0,0);
-    if ((node = search(id)) != NULL){
+    RBTNode *tmp = new RBTNode(0,0);
+    RBTNode *Sroot = root;
+    while ((Sroot!=NULL) && (Sroot->N_key!=id))//tree isn't empty and root!=target
+    {
+        tmp=Sroot;
+        if (id < Sroot->N_key)  Sroot = Sroot->left;
+        else                     Sroot = Sroot->right;
+    }
+    if (Sroot!=NULL) node=Sroot;
+    else {//id isn't a key of node in the tree
+        node=tmp;
+        if(id>node->N_key) {cout<<node->N_key<<" "<<node->N_count<<endl; }
+    }
+    if (node->N_key==id||id<node->N_key){
         RBTNode *newroot =node->left;//case has left child
         if (newroot != NULL){//previous is the rightmost node in left subtree
             while(newroot->right != NULL) newroot = newroot->right;
@@ -166,13 +189,16 @@ RBTNode* RBTree::findPivot(long id1, long id2){
         if (node->N_key>=id1&&node->N_key<=id2) {//root in the range
             return node;
         }
-        while(node!=NULL&&(node->N_key>id2||node->N_key<id1)) {
-            if (node->N_key>id2) {
-                node=node->left;
+			while(node!=NULL&&(node->N_key>id2||node->N_key<id1)){
+				if (node->N_key>id2) {
+                    node=node->left;
+                    if (node==NULL) break;
+                }
+                if (node->N_key<id1) {
+                    node=node->right;
+                    if (node==NULL) break;
             }
-            if (node->N_key<id1) {
-                node=node->right;
-            }
+            
         }
     }
     return node;
@@ -292,7 +318,6 @@ void RBTree::insert(RBTNode* &root, RBTNode* node)
     }
     else root = node;//empty tree
     node->color = RED;
-    
 
     insertRebalance(root, node);//rebalance
 }
@@ -410,8 +435,8 @@ void RBTree::remove(RBTNode* &root, RBTNode *node)
         
         if (color == BLACK)//deleted a black node, subtree became deficient
             removeRebalance(root, child, parent);
-        delete node;
-        node=NULL;
+//        delete node;
+        node=nullnode;
         return;
     }
     //delete  degree 1 node
@@ -435,7 +460,7 @@ void RBTree::remove(RBTNode* &root, RBTNode *node)
         removeRebalance(root, child, parent);
     
 //    delete node;//degree 0 or degree 1;
-    node=NULL;
+    node=nullnode;
 }
 
 
@@ -544,28 +569,6 @@ RBTNode* RBTree::search(long key)
      return search(root, key);//???
 }
 
-void RBTree::print(RBTNode* tree, long key, int direction)
-{
-    if(tree != NULL)
-    {
-        isred(tree)? i++:i;
-        if(direction==0)
-            cout <<" "<< tree->N_key<<" "<<tree->N_count<< "(B) is root" << endl;
-        else
-            cout <<" "<< tree->N_key <<" "<<tree->N_count<<  (isred(tree)?"(R)":"(B)") << " is " << key << "'s "  << " "
-            << (direction==1?"right child" : "left child") << endl;
-        print(tree->left, tree->N_key, -1);
-        print(tree->right,tree->N_key,  1);
-    }
-}
-
-void RBTree::print()
-{
-    if (root!= NULL)
-        i=0;
-        print(root, root->N_key, 0);
-    cout<<"there are "<<i<<" Rs"<<endl;
-}
 
 void RBTree::deleteAll(RBTNode* &tree)
 {
@@ -577,6 +580,5 @@ void RBTree::deleteAll(RBTNode* &tree)
     if (tree->right != NULL)
         return deleteAll(tree->right);
     
-    delete tree;
-    tree=NULL;
+    tree=nullnode;
 }

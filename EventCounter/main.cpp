@@ -14,15 +14,15 @@ using namespace std;
 
 int main(int argc, const char * argv[]) {
     
-    time_t start = clock();
     string filename = argv[1];
-    ifstream file(filename);
+    ifstream file(filename);//read file
+    
     int j=0;
     long size;
     file>>size;
     long id;
     long count;
-    vector<RBTNode> nodelist;
+    vector<RBTNode> nodelist;//use vector to store treenode
     
     while (j<size) {
         file>>id>>count;
@@ -32,25 +32,21 @@ int main(int argc, const char * argv[]) {
         nodelist.push_back(*node);
         j++;
     }
-
     file.close();
     RBTree tree;
     tree.setRoot(ArrayToBST(nodelist, 0, size-1,0,size));
-    
-    time_t end = clock();
-    printf("the running time is : %f\n", double(end -start)/CLOCKS_PER_SEC);
     
     string fn;
     long p1=0;
     long p2=0;
     while (cin>>fn) {
-        if (fn == "quit") break;
         if (fn=="increase"&&cin>>p1>>p2) tree.increase(p1,p2);
         if (fn=="reduce"&&cin>>p1>>p2)   tree.reduce(p1,p2);
         if (fn=="count"&&cin>>p1)        tree.count(p1);
         if (fn=="inrange"&&cin>>p1>>p2)  tree.inrange(p1,p2);
         if (fn=="next"&&cin>>p1)         tree.next(p1);
         if (fn=="previous"&&cin>>p1)     tree.previous(p1);
+        if (fn == "quit") break;
     }
     return 0;
 }
